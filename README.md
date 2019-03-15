@@ -91,7 +91,7 @@ K_MIN = 1  # ...from K_MIN...
 K_MAX = 20  # ...to K_MAX...
 N_TEST = 100  # ... N_TEST times.
 accuracies = [0] * (K_MAX - K_MIN + 1)  # to keep the accuracy for each k
-k = 3  # to manually choose if RUN_AREA_PREDICTION is False
+k = 3  # to manually choose if RUN_K_ACCURACY is False
 
 predictions = []  # to keep the prediction for each point on the graph
 
