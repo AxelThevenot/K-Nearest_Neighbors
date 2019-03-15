@@ -390,6 +390,5 @@ if __name__ == '__main__':
     maths, french, category = toXY(trainingSet)
     if RUN_AREA_PREDICTION:
         areaPredictions()
-    display_k_nearest(5, 15, 12.75)
     display()
 ```
