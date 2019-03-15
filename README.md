@@ -51,9 +51,11 @@ Import the data set
 
 For a given sample
      
-     Go through each item in the dataset, and calculate the "distance" from that data item to the sample.
+     For each each item in the dataset 
+         
+         Calculate the "distance" from that data item to the sample
 
-     Classify the sample as the majority class between K samples in the dataset having minimum distance to the sample.
+     Classify the sample as the majority class between K samples in the dataset having minimum distance to the sample
 ```
 
 ### Choosing k
