@@ -40,7 +40,7 @@ As an example, for k < 3, the model is too specialized on the training set data 
 
 As an example for k > 80
 
-![k accuracies](k_accuracies.png)
+![k accuracies](k_accuracy.png)
 
 ## Pseudo Code
 
