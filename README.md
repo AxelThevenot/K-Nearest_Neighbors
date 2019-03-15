@@ -1,6 +1,6 @@
 ## An easy example
 
-### Predicting the final exam, which will be passed
+### Predicting what final exam will be passed
 
 To illustrate the K-nearest neighbors (KNN) algorithm I will take an easy example. Easy means with only 2 dimensions. By this way, we will be able to display on graphs without reducing the dimensions. It will be more pleasant to look at and therefore to interpret.
 
@@ -38,15 +38,35 @@ As an example, for k < 3, the model is too specialized on the training set data 
 
 * Underfitting : the predictive model can't even capture the correlations of the training set. As a result, the cost of error in the learning phase stays high.  Of course, the predictive model be well generalized to other given data.
 
-As an example for k > 80
-
 ![k accuracies](k_accuracy.png)
+
+For each test of a k value it is really important to randomly split the dataset to have a training set AND a test set otherwise there is a high risk of overfitting. 
 
 ## Pseudo Code
 
-```
-import the dataset
+### KNN
 
+```
+Import the data set
+
+For a given sample
+     
+     Go through each item in the dataset, and calculate the "distance" from that data item to the sample.
+
+     Classify the sample as the majority class between K samples in the dataset having minimum distance to the sample.
+```
+
+### Choosing k
+```
+Import the dataset
+
+For each k from 1 to N
+    
+    Split randomly the dataset into a training set and a test set
+    
+    Test the accuracy of the k value in for the test set according to the k-nearest neighbors in the training set
+    
+Select the k value, which has the best accuracy
 ```
 
 
