@@ -100,15 +100,20 @@ To have a more pragmatical and readable script I choose to isolate the variables
 # test each k...
 K_MIN = 1  # ...from K_MIN...
 K_MAX = 20  # ...to K_MAX...
-N_TEST = 100  # ... N_TEST times.
+N_TEST = 25  # ... N_TEST times.
 accuracies = [0] * (K_MAX - K_MIN + 1)  # to keep the accuracy for each k
 k = 3  # to manually choose if RUN_K_ACCURACY is False
 
+
+# arrays used to keep the values
+dataset = []
+maths, french, category = [], [], []  # arrays to use
 predictions = []  # to keep the prediction for each point on the graph
+
 
 # plot
 RUN_AREA_PREDICTION = False  # to display or not the area of predictions behind the points
-RUN_K_ACCURACY = True  # to display or not the each k accuracy on a graph
+RUN_K_ACCURACY = False  # to display or not the each k accuracy on a graph
 
 # to display the graph k accuracies
 if RUN_K_ACCURACY:
@@ -263,6 +268,12 @@ def prediction(k, maths_array, french_array, category_array, maths_value, french
     return max(counts, key=counts.get)
 ```
 
+![predictions](prediction.png)
+
+The `areaPrecditions()` function is a bit the purpose of the KNN algorithm. It will calculate for each possible averages the prediction the algorithm made. As we can see on the graph above, the areas are divided in 3 colors. It basically means that if a point is on the blue area then the prediction is that the sample will pass the maths exam at the end of the year.
+
+However, it should be taken into consideration that the algorithm is time-consumming. That is why I choose to define a step between each sample to predict. It easily can be changed.  
+
 ```python
 def areaPredictions():
     """
@@ -284,12 +295,15 @@ def areaPredictions():
             predicted = prediction(k, maths, french, category, x, y)
             predictions.append([x, y, predicted])
             ax.scatter(x, y, c=area_color[predicted])  # plot the prediction
-        print('predictions calculation : {0}%'
+        print('prediction calculation : {0}%'
               .format(int((x*step - x_min + 1) / len(x_range) * 100)))
 ```
 
-
 ### Choose K
+
+The KNN algorithm is now written. Then two next functions will be used to choose a convenient value of k. 
+
+The `getAccuracy()` function simply calculates the accuracy of the predictions made by our algorithm on the test set considering the training set and according to a given k value. It takes three arguments : a training set, a test set to compare the prediction to the reality and the given k value.   
 
 ```python 
 def getAccuracy(trainingSet, testSet, k):
@@ -309,6 +323,8 @@ def getAccuracy(trainingSet, testSet, k):
     return (correct / float(len(testSet))) * 100.0
 ```
 
+The `choose_k()` function runs the previous function for a range of k value and returns the best one. It takes three arguments : the minimum k value to test, the maximum k value to test and the number of test, which have to be done for each value.
+
 ```python 
 def choose_k(k_min, k_max, n_test):
     """
@@ -325,11 +341,13 @@ def choose_k(k_min, k_max, n_test):
         print("choose k : {0}%"
               .format(int((k - k_min + 1) / (k_max + 1 - k_min) * 100)))
 
-    return accuracies.index(max(accuracies))
+    return accuracies.index(max(accuracies) + k_min)
 ```
 
 
 ### Display
+
+All the function are now operative. We only have to display it. The `display()` function is a main like function for the rendering. According to the `RUN_K_ACCURACY` and `RUN_AREA_PREDICTION` it will render the outputs (or not). 
 
 ```python 
 def displayAccuracies():
@@ -381,7 +399,6 @@ def display():
 ```
 
 
-
 ### Run it !
 
 ```python 
@@ -398,18 +415,4 @@ if __name__ == '__main__':
     display()
 ```
 
-### not really accurate because of the data. We will try with an other dataset ;)
 
-```python 
-if __name__ == '__main__':
-    dataset = loadDataset("otherFrenchStudent.csv")
-
-    if RUN_K_ACCURACY:
-        k = choose_k(K_MIN, K_MAX, N_TEST)
-
-    trainingSet, testSet = split(dataset, 1)
-    maths, french, category = toXY(trainingSet)
-    if RUN_AREA_PREDICTION:
-        areaPredictions()
-    display()
-```
