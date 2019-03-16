@@ -272,7 +272,8 @@ def prediction(k, maths_array, french_array, category_array, maths_value, french
 
 The `areaPrecditions()` function is a bit the purpose of the KNN algorithm. It will calculate for each possible averages the prediction the algorithm made. As we can see on the graph above, the areas are divided in 3 colors. It basically means that if a point is on the blue area then the prediction is that the sample will pass the maths exam at the end of the year.
 
-However, it should be taken into consideration that the algorithm is time-consumming. That is why I choose to define a step between each sample to predict. It easily can be changed.  
+However, it should be taken into consideration that the algorithm is time-consumming. Doing predictions on areas requires lots of calculations. And since an area is technically an infinity of points, you must reduce the number of points to calculate. 
+`step = 6` means that the square of an area equal to 1 would calculate the prediction for `step²` points, which would be 36 points to process. It easily can be changed.  
 
 ```python
 def areaPredictions():
