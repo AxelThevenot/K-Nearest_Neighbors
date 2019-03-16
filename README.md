@@ -341,7 +341,7 @@ def choose_k(k_min, k_max, n_test):
         print("choose k : {0}%"
               .format(int((k - k_min + 1) / (k_max + 1 - k_min) * 100)))
 
-    return accuracies.index(max(accuracies) + k_min)
+    return accuracies.index(max(accuracies)) + k_min
 ```
 
 
