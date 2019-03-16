@@ -10,7 +10,7 @@ The dataset is a .csv file and its associated spreadsheet is represent below. As
 
 ### K-nearest neighbors principle
 
-The KNN algoritmh is a method used for classification or regression. It consists of find the k nearest training examples in the feature space. In our example the training examples are the french students and their features are their maths and fench average. As I said there are two cases : 
+The KNN algoritmh is a method used for classification or regression. It consists of finding the k nearest training examples in the feature space. In our example the training examples are the french students and their features are their maths and fench average. As I said there are two cases : 
 * Classification : the output is a class. In our example the KNN is for classification and the output is one of the three classes (pass the french exam, pass the maths exam and pass both). The KNN algorithm finds the k closest training examples and the output is the class, which is majoritary in those k neighbors. 
 * Regression : the output is a property value. The KNN algorithm finds the k closest training examples and the output is the average of property value of interest of the k neighbors.
 
@@ -75,7 +75,15 @@ Select the k value, which has the best accuracy
 
 ## Let's start with python
 
+
 ### Imports
+
+For our algorithm we need to import some libraries :
+* csv : to deal with .csv files
+* random : to randomize some actions next
+* matplotlib : to plot the results (mpatches wil be used to create the legends)
+
+
 ```python 
 import csv
 import random
@@ -85,6 +93,9 @@ import matplotlib.patches as mpatches
 
 
 ### Variables
+
+To have a more pragmatical and readable script I choose to isolate the variables and put some pseudo-constants. The pseudo-constants are the variables written with uppercases, we can change them to choose what we want the script to do.
+
 ```python 
 # test each k...
 K_MIN = 1  # ...from K_MIN...
@@ -117,6 +128,7 @@ area_color = {0: '#FFCCCC', 1: '#CCCCFF', 2: '#8FF5C9'}  # category's color for 
 
 ### Dataset
 
+Obvisouly, we need to load a dataset. The function `loadDataset()` take the .csv file name as argument and returns an array containing each row of the file, removing the fields.
 
 ```python 
 def loadDataset(filename):
@@ -134,6 +146,8 @@ def loadDataset(filename):
     dataset.pop(0)  # remove the fields
     return dataset
 ```
+
+As you may have understood, we need to split the data set into two other set; the training set and the test set. The function `split()` returns thoses two sets as arrays. It takes two arguments : the dataset to split and a ratio to (randomly) split it. The ratio indicates the lenght of the training set according to the dataset.   
 
 ```python 
 def split(dataset, ratio):
@@ -159,6 +173,9 @@ def split(dataset, ratio):
             testSet.append(dataset[row])
     return trainingSet, testSet
 ```
+Then the `toXY()` is not a useful function. It transposes the row into column to return each row elements as an array. Moreover, it removes the last name and the first name columns. By this way, in our case, the first returned array will be the maths one, then the french column and the last is the label column. This function takes the dataset as argument.
+
+We could deal with the KNN algorithm without this function. Yet, I use it to give names for these arrays to be more explicit in my code next. 
 
 ```python 
 def toXY(dataset):
@@ -172,6 +189,9 @@ def toXY(dataset):
 ```
 
 ### KNN
+
+
+To start with the KNN algorithm we will first write the distance function. the `distance()` calculates the euclidean distance from a given point to each point of the training array and return the associated array. It takes our arguments : params1 and params2, which will be respectively the maths and the french arrays of the training set, and it also takes the coordinates of the given point, which are the maths and french average of the given point in our example.  
 
 ```python 
 def distance(params1, params2, from_val1, from_val2):
@@ -190,6 +210,7 @@ def distance(params1, params2, from_val1, from_val2):
     return distances
 ```
 
+The function `findKNN()` as its name indicates, will find the k-nearest neighbors and returns their row index. It takes five arguments : k is the number of neighbors to find and the last four arguments are the same as the previous function `distance()`. 
 
 ```python 
 def findKNN(k, maths_array, french_array, maths_value, french_value):
@@ -216,6 +237,8 @@ def findKNN(k, maths_array, french_array, maths_value, french_value):
     return k_nearests_index
 ```
 
+The goal of the KNN algorithm is to classify a sample. The `prediction()` function has this role. It classifies the sample as the majority class between the k samples having minimum distance to the sample. It takes the same 5 arguments as the previous function.
+
 ```python 
 def prediction(k, maths_array, french_array, category_array, maths_value, french_value):
     """
@@ -238,7 +261,6 @@ def prediction(k, maths_array, french_array, category_array, maths_value, french
         else:
             counts[c] += 1
     return max(counts, key=counts.get)
-    # then plot the point
 ```
 
 ```python
