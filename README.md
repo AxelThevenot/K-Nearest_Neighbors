@@ -6,7 +6,7 @@ To illustrate the K-nearest neighbors (KNN) algorithm I will take an easy exampl
 
 In this case, we have a dataset of maths and french subjects average for 300 french students on the year 2018. We also know what final exam they passed (Assuming there are only the maths ant the french final exam at the end of the year and that each student pass at least one of them). The goal of the KNN algorithm here is to predict what final exam a student of the next promotion will pass according to its maths and french average.
 The dataset is a .csv file and its associated spreadsheet is represent below. As you can see the last column is for the label. The label is for the classification. The 0, 1 and 2 respectively mean that the student pass the french exam, pass the maths exam and pass both.
-![Dataset](dataset.png)
+![Dataset](/src/dataset.png)
 
 ### K-nearest neighbors principle
 
@@ -27,7 +27,7 @@ To predict what exam a student will pass according to its averages and the train
 
 So for a new student (represented as a black point), who has averages of 15 in maths and 12.75 in french, the 5-nearest neighbors are 3 green points, 1 red point and 1 blue point. Therefore 5-NN algorithm classify this student as a green point even if the blue point and the red points are closest than the green ones. So it predicts that this student will pass the two exams.
 
-![KNN explanation](knn_explanation.png)
+![KNN explanation](/src/knn_explanation.png)
 
 I choose a k = 5 in my example but how can we choose the k value ? 
 
@@ -38,7 +38,7 @@ As an example, for k < 3, the model is too specialized on the training set data 
 
 * Underfitting : the predictive model can't even capture the correlations of the training set. As a result, the cost of error in the learning phase stays high.  Of course, the predictive model be well generalized to other given data.
 
-![k accuracies](k_accuracy.png)
+![k accuracies](/src/k_accuracy.png)
 
 For each test of a k value it is really important to randomly split the dataset to have a training set AND a test set otherwise there is a high risk of overfitting. 
 
@@ -268,7 +268,7 @@ def prediction(k, maths_array, french_array, category_array, maths_value, french
     return max(counts, key=counts.get)
 ```
 
-![predictions](prediction.png)
+![predictions](/src/prediction.png)
 
 The `areaPrecditions()` function is a bit the purpose of the KNN algorithm. It will calculate for each possible averages the prediction the algorithm made. As we can see on the graph above, the areas are divided in 3 colors. It basically means that if a point is on the blue area then the prediction is that the sample will pass the maths exam at the end of the year.
 
