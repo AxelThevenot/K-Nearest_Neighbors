@@ -1,419 +1,419 @@
-## An easy example
+## Genetic Algorithm principle
 
-### Predicting what final exam will be passed
+The genetic algorithms (GA) are evolutionnary algorithms inspired by [Darwin's theory](https://www.darwins-theory-of-evolution.com/). This theory is about the evolution of species. According to the theory, animal and plant species had to change to survive, adapting their changes to their environment. Only the survivors have descendants, this is called natural selection. The GA's goal is to obtain an approximate solution to an optimization problem, when there is no exact method (or if the solution is unknown) to solve it in a reasonable time.
+That is what we will try to implement a GA taking the example of the famous Travelling Salesman Problem.
 
-To illustrate the K-nearest neighbors (KNN) algorithm I will take an easy example. Easy means with only 2 dimensions. By this way, we will be able to display on graphs without reducing the dimensions. It will be more pleasant to look at and therefore to interpret.
+## Travelling Salesman Problem (TSP)
 
-In this case, we have a dataset of maths and french subjects average for 300 french students on the year 2018. We also know what final exam they passed (Assuming there are only the maths ant the french final exam at the end of the year and that each student pass at least one of them). The goal of the KNN algorithm here is to predict what final exam a student of the next promotion will pass according to its maths and french average.
-The dataset is a .csv file and its associated spreadsheet is represent below. As you can see the last column is for the label. The label is for the classification. The 0, 1 and 2 respectively mean that the student pass the french exam, pass the maths exam and pass both.
-![Dataset](/src/dataset.png)
+The [Travelling Salesman Problem](https://en.wikipedia.org/wiki/Travelling_salesman_problem) is easy to understand. The goal is to find the best route (with the shortest distance) linking all the points the salesman wants to visit. The salesman begins from a starting point and comes back to it (here purple on the GIF below). Yet it is a hard task to solve the problem by trying each possibility. For example, to find the best route to link 100 points, there are 9.332622e+157 possibilities. To be more precise there are 93 326 215 443 944 152 681 699 238 856 266 700 490 715 968 264 381 621 468 592 963 895 217 599 993 229 915 608 941 463 976 156 518 286 253 697 920 827 223 758 251 185 210 916 864 000 000 000 000 000 000 000 000 possibilities. As a comparaison, the estimate age of the universe is 4,320432e+17 seconds. So we can infer that the solution is impossible to find (at a human time scale). Therefore, we will try to approximate the shortest route as shown in the GIF below. There is a GA for the TSP of 100 points and that is working... Staggering ! So thank you nature for inspiring us. 
 
-### K-nearest neighbors principle
+![TSP for 100 points](100points.gif)
 
-The KNN algoritmh is a method used for classification or regression. It consists of finding the k nearest training examples in the feature space. In our example the training examples are the french students and their features are their maths and fench average. As I said there are two cases : 
-* Classification : the output is a class. In our example the KNN is for classification and the output is one of the three classes (pass the french exam, pass the maths exam and pass both). The KNN algorithm finds the k closest training examples and the output is the class, which is majoritary in those k neighbors. 
-* Regression : the output is a property value. The KNN algorithm finds the k closest training examples and the output is the average of property value of interest of the k neighbors.
+## IT and biology mingle
+
+As I said, the GA are evolutionary algorithms inspired by the biology. The principles of population evolution are selection, crossover and mutation. The selection in a real life population is the natural selection. The "best" individuals give their genes to their children and they form the new generation and this process is repeated. 
+
+To answer a problem, each individual has a cost or a fitness. Those two are similar inherently but different in the way we see them. For example in the TSP case, we will talk about costs as we are interested in how much the route costs (in distance). On the contrary, in a craking-password case, we will be interested in how much the string found fits with the password, so we talk about fitness.
+
+![](Evolution.png)
+
+The first step in GA is the selection process. It is a selection according to the best individuals of a generation.
+The selection process can be done in several ways :
+* Proportionally to the cost/fitness : each individual has a weight proportional to its cost or fitness. The selection is done by choosing randomly individuals according to their weight. Yet this selection process in some cases can approach the [local optimum](https://thinkingandcomputing.com/posts/genetic-algorithms-neural-networks.html) without reaching the global one.
+* Proportionally to the rank : this process is really similar to the previous one. It sorts the individuals according to their cost or fitness. Each individual has a weight proportional to its rank. The worst has a 1 weight, the second worst has a 2 weight, ..., the best has a N weight.
+* By tournament : launch several tournaments of size k composed by random individuals of the generation. Take the first individuals. The advantage of this method is that it can work on parallel architectures.
+* By elitism : The easiest way to do the selection. It takes the k-best individuals of the generation.
+* There are [more different processes](https://fr.slideshare.net/riyadparvez/selection-in-evolutionary-algorithm) of course.
+
+Then the crossover or recombination is the process of creating a child from the genetic information of the parents. One can guess there are many ways to create this process.
+* The crossover is usually made from 2 parents but it is also possible to make it with k-parents.
+* One point crossover : choose a limit point (randomly or not) and take the genetic information from the first parent until the limit point chosen. Then add the genetic information of the second parent starting to the same limit point. To a better understanding, refer to the diagram above.
+* K-points crossover : it works similarly but their are k limit points and the child is created by alternating the genetic information of each parent.
+* Uniform crossover : for each gene, the uniform crossover randomly chooses either from the first parent or from the second parent.
 
 
-In both method we can assign a ponderation to each neihgbors. As an example we can ponderate a neighbor in an inversely proportionnal way to the its distance.
+The last process is the mutation. There are also different cases depending on the individuals. It can randomly replace a gene by another or interchange genes.
+
+## Biology in our program
+
+In this section I will explain what are the processes and the variables I choose to resolve the TSP.
+
+First of all, each individual is considered as a route linking the `N_POINT`. The population of size `SIZE_POPULATION` is a list of routes. For this case, we will use cost calculation instead of fitness calculation as we cannot anticipate what the best result will be. The costs will be calculated by the sum of the distance of each edge linking two points to visit. 
+
+Secondly, to get from the n generation to the (n+1) generation :
+* Selection : I hesitated between the selection by rank or by eletism. I chose the elitism process as in this problem there are a lot of calculations needed. The elistism process may give a rough solution but it is quick. So the `RATIO_SELECTION` % bests individals of the n generation will be selected for the (n+1) generation. 
+* Crossover : it will be a [4-points](https://www.tutorialspoint.com/genetic_algorithms/genetic_algorithms_crossover.htm) crossover. The parents for the (n+1) generation will be the individuals previously selected. They will create `RATIO_CROSSOVER` % of `SIZE_POPULATION`. Then while the parents and children number is less than the `SIZE_POPULATION`, a new random individual is created.
+* Mutation : I did not choose one of the processes explained above. For the mutation process on an individual, a random limit gene will be chosen. The mutate individual has two interchanged parts as shown below. 
 
 
-### KNN in our problem
+![](Mutation.png)
 
-To predict what exam a student will pass according to its averages and the training examples we will not use a ponderation according to the distances of the neighbors. As you may have understood, it is a KKN classification method here. A graph of the training point is shown below. Each student is represented as a point on a graph. This point has a x-coordinate according to its maths average and a y-coordinate according to its french average. The color of the training points means :
-* Red : pass the final french exam
-* Blue : pass the final maths exam
-* Green : pass both
 
-So for a new student (represented as a black point), who has averages of 15 in maths and 12.75 in french, the 5-nearest neighbors are 3 green points, 1 red point and 1 blue point. Therefore 5-NN algorithm classify this student as a green point even if the blue point and the red points are closest than the green ones. So it predicts that this student will pass the two exams.
+With those processes, in theory, the population cannot fall into a [local optimum](https://thinkingandcomputing.com/posts/genetic-algorithms-neural-networks.html) indefinitely since individuals are randomly selected and added to each generation. However, in practice, a population is considered has having converged if there is no further improvement after a few generations. Several populations can be relaunched and the stability of the best individuals obtained can be verified (or not). But I will simply choose to define a number `MAX_GENERATION` of generations to be reached.
 
-![KNN explanation](/src/knn_explanation.png)
-
-I choose a k = 5 in my example but how can we choose the k value ? 
-
-To choose the best k value the easier method is to test, which k value will has the best accuracy, for a range of k. In practice, the perfect k value does not exists. Especially since the data are condensed. It is impossible to reach a 100% accuracy for a k value. I ran 100 tests for each k from 1 to 150 as shown below. The bests k are between 10 and 40. This selection method limits : 
-* Overfitting : the predictive model will capture all the details that describe the data in the training set. In this case, it will capture all the fluctuations and the random variations of the training set data. In other words, the predictive model will capture the generalizable correlations AND the noise produced by the data. 
-
-As an example, for k < 3, the model is too specialized on the training set data and will not be well generalized to other given data
-
-* Underfitting : the predictive model can't even capture the correlations of the training set. As a result, the cost of error in the learning phase stays high.  Of course, the predictive model be well generalized to other given data.
-
-![k accuracies](/src/k_accuracy.png)
-
-For each test of a k value it is really important to randomly split the dataset to have a training set AND a test set otherwise there is a high risk of overfitting. 
 
 ## Pseudo Code
 
-### KNN
-
 ```
-Import the dataset
-
-For a given sample
-     
-     For each each item in the dataset 
-         
-         Calculate the "distance" from that data item to the sample
-
-     Classify the sample as the majority class between the K samples having minimum distance to the sample
+Set varaiables and parameters
+Generate the genesis population
+While the maximum iteration is not reached
+    Calculate each individuals costs and sort the generation
+    Selection (with elitism selection)
+    Crossover (with 4-points crossover)
+    Complete with new random individuals while the population size is not reached
+    Mutation (with personnnal mutation (might have a name))
+    Return the best individual found
 ```
-
-### Choosing k
-
-```
-Import the dataset
-
-For each k from 1 to N
-    
-    Split randomly the dataset into a training set and a test set
-    
-    Test the accuracy of the k value in for the test set according to the k-nearest neighbors in the training set
-    
-Select the k value, which has the best accuracy
-```
-
 
 ## Let's start with python
 
+### Individuals
 
-### Imports
+In a `individual.py` file : 
 
-For our algorithm we need to import some libraries :
-* csv : to deal with .csv files
-* random : to randomize some actions next
-* matplotlib : to plot the results (mpatches wil be used to create the legends)
-
+Creation of the individuals and their cost. An individual is made from a list of points taking a route for argument. The `costFunction()` returns its cost, which is the sum of each point-to-point distance.
 
 ```python 
-import csv
 import random
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+
+class Individual:
+
+    def __init__(self, _points):
+        """
+        Initialize a individual from a list of points
+        :param _points: list of point the individual is made from
+        """
+        self.points = [list(point) for _, point in enumerate(_points)]
+        self.cost = self.costFunction()
+
+    
+    def costFunction(self):
+        """
+        Calculate the distance needed to link each point
+        :return:
+        """
+
+        # only create the distance function between two points (Pythagoras)
+        def distance(point_1, point_2):
+            return (point_1[0] - point_2[0]) ** 2 + (point_1[1] - point_2[1]) ** 2
+
+        # and sum the distances between each point to have the cost value
+        cost = 0
+        for i in range(len(self.points) - 1):
+            cost += distance(self.points[i], self.points[(i + 1)])
+        return cost
 ```
-
-
-### Variables
-
-To have a more pragmatical and readable script I choose to isolate the variables and put some pseudo-constants. The pseudo-constants are the variables written with uppercases, we can change them to choose what we want the script to do.
+Each individual can be crossed with an other as argument and the function returns the child. The crossover process is a 4-point crossover.
 
 ```python 
-# test each k...
-K_MIN = 1  # ...from K_MIN...
-K_MAX = 20  # ...to K_MAX...
-N_TEST = 25  # ... N_TEST times.
-accuracies = [0] * (K_MAX - K_MIN + 1)  # to keep the accuracy for each k
-k = 3  # to manually choose if RUN_K_ACCURACY is False
+    def crossWith(self, other):
+        """
+        cross self with other as a 4-point crossover
+        :param other: other individuals
+        :return: child
+        """
+        # select randomly the 4-point of te crossover
+        genes = [random.randint(0, len(self.points) - 1) for _ in range(4)]
+        genes.sort()  # sort them for the use
 
+        points_from_self = self.points[genes[0]:genes[1]]  # first part of self's points
+        points_from_self += self.points[genes[2]:genes[3]]  # second part of self's points
+        # looking for the missing points
+        points_from_other = [point for _, point in enumerate(other.points) if point not in points_from_self]
 
-# arrays used to keep the values
-dataset = []
-maths, french, category = [], [], []  # arrays to use
-predictions = []  # to keep the prediction for each point on the graph
-
-
-# plot
-RUN_AREA_PREDICTION = False  # to display or not the area of predictions behind the points
-RUN_K_ACCURACY = False  # to display or not the each k accuracy on a graph
-
-# to display the graph k accuracies
-if RUN_K_ACCURACY:
-    fig_k = plt.figure(0)
-    ax_k = fig_k.add_subplot(1, 1, 1)
-
-# to display the graph of points
-fig = plt.figure(1)
-ax = fig.add_subplot(1, 1, 1)
-legends = {0: 'pass final french exam', 1: 'pass final maths exam', 2: 'pass both'}
-
-# choose the colors (respectively red, blue and green)
-color = {0: '#FF8877', 1: '#8877FF', 2: '#2F9599'}  # category's color for points
-area_color = {0: '#FFCCCC', 1: '#CCCCFF', 2: '#8FF5C9'}  # category's color for area
+        # add the parent's point to create the child's list of point
+        child_points = points_from_self + points_from_other
+        return Individual(child_points)
 ```
 
-
-### Dataset
-
-Obvisouly, we need to load a dataset. The function `loadDataset()` take the .csv file name as argument and returns an array containing each row of the file, removing the fields.
+Each individual can mutate. A mutation here is interchanging the left and right part of the genetic information according to a random gene.  
 
 ```python 
-def loadDataset(filename):
-    """
-    load a dataset from a filename
-    :param filename: filename of the dataset
-    """
-    # initializing the titles and rows list
-    dataset = []
-    with open(filename, 'r') as f:  # reading csv file
-        # creating a csv reader object
-        csvreader = csv.reader(f)
-        for row in csvreader:
-            dataset.append(row)
-    dataset.pop(0)  # remove the fields
-    return dataset
+    def mutate(self):
+        """
+        mutate an individual
+        """
+        # select a random gene
+        rand_index = random.randint(0, len(self.points) - 1)
+        # mutate [a, b, c, d, e, f, g] with rand_index = 2 become [c, d, e, f, g, a, b,]
+        point_mutated = self.points[rand_index:]  # [c, d, e, f, g] in the example
+        point_mutated += self.points[:rand_index]  # add [a, b] in the example
+        self.points = point_mutated[:]
 ```
 
-As you may have understood, we need to split the data set into two other set; the training set and the test set. The function `split()` returns thoses two sets as arrays. It takes two arguments : the dataset to split and a ratio to (randomly) split it. The ratio indicates the lenght of the training set according to the dataset.   
+the function `toXY()` returns an array X of each x-coordinate and an array Y of each y-coordinate. It will be usefull to plot an individual during the evolution process. 
 
 ```python 
-def split(dataset, ratio):
-    """
-    Split the dataset into a training set and a test set
-    :param dataset: dataset top split
-    :param ratio: percent of the row in the training set from the dataset
-    :return: training set, test set
-    """
-    trainingSet = []
-    testSet = []
-    # separate randomly the training and the test set
-    for row in range(len(dataset) - 1): # for each row
-        # convert the strings, which had to be floats.
-        for col in range(2, 4):
-            dataset[row][col] = float(dataset[row][col])
-        # convert the string, which has to be an int
-        dataset[row][4] = int(dataset[row][4])
-        # split randomly the set
-        if random.random() < ratio:
-            trainingSet.append(dataset[row])
-        else:
-            testSet.append(dataset[row])
-    return trainingSet, testSet
-```
-Then the `toXY()` is not a useful function. It transposes the row into column to return each row elements as an array. Moreover, it removes the last name and the first name columns. By this way, in our case, the first returned array will be the maths one, then the french column and the last is the label column. This function takes the dataset as argument.
+    def toXY(self):
+        """
+        to return X and Y array of coordinates to plot the individual
+        :return: X coordinates, Y coordinates
+        """
+        # isolate the X and the Y array to return them
+        X = [self.points[p][0] for p in range(len(self.points))]
+        Y = [self.points[p][1] for p in range(len(self.points))]
+        # as the starting point is (0, 0) point, we are looking for the first nearest point
+        minDistance = {"index": 0, "distance": X[0] ** 2 + Y[0] ** 2}  # dictionary to easy use
+        for i in range(len(X)):
+            distance_i = X[i] ** 2 + Y[i] ** 2  # take the distance from (0, 0) to each point
+            if distance_i < minDistance["distance"]:  # compare to the best point already found
+                # replace it if there is a new nearest point from (0, 0)
+                minDistance["index"] = i
+                minDistance["distance"] = distance_i
 
-We could deal with the KNN algorithm without this function. Yet, I use it to give names for these arrays to be more explicit in my code next. 
+        # surround X, Y by the starting point (0, 0), which is also the ending point
+        X = [0] + X[minDistance["index"]:] + X[:minDistance["index"]] + [0]
+        Y = [0] + Y[minDistance["index"]:] + Y[:minDistance["index"]] + [0]
+        return X, Y
+```
+
+### Population
+
+In a `population.py` file : 
+
+Creation of the population composed of individuals. It takes two arguments : the size we are interested in and an array of the points an individual has to visit. The `newIndividuals()` function will be used to reach the size of interest after the crossovers (cf. pseudo code). And the `randomPopulation()` function will be used to generate a random population. It takes three arguments :  the size of the population we want to create, the size value of the squared-map, where the point can be located and the number of random points to visit.
 
 ```python 
-def toXY(dataset):
+from individual import *
+
+class Population:
+   
+   def __init__(self, size, pointList):
+        """
+        Initialize population of size individuals from a pointList
+        :param size: size of the population
+        :param pointList: pointList from which the individuals are made from
+        """
+        self.size = size
+        # randomly create individuals from pointList
+        self.individuals = [Individual(random.sample(pointList, len(pointList)))
+                                       for _ in range(self.size)]
+        self.best = self.individuals[0]
+
+    def newIndividuals(self):
+        """
+        Create a random new Individual while the population size is not equal to the size chosen
+        """
+        while len(self.individuals) < self.size:
+            points = self.individuals[0].points
+            new_individual = Individual(random.sample(points, len(points)))
+            self.individuals.append(new_individual)
+
+
+def randomPopulation(size_population, size_plot, n_point):
     """
-    transpose the dataset
-    :param dataset: dataset to transpose
-    :return: transposed dataset
+    Create a new random population
+    :param size_population: size of population
+    :param size_plot: size of the plot side
+    :param n_point: number of points each individuals is made from
+    :return: population created
     """
-    transposed_dataset = [list(row) for row in zip(*dataset)][2:]
-    return transposed_dataset[0], transposed_dataset[1], transposed_dataset[2]
+    # create a random array of points to define a new individual
+    points = [(random.random() * size_plot, random.random() * size_plot)
+              for _ in range(n_point)]
+    return Population(size_population, points)
 ```
-
-### KNN
-
-
-To start with the KNN algorithm we will first write the distance function. the `distance()` calculates the euclidean distance from a given point to each point of the training array and return the associated array. It takes our arguments : params1 and params2, which will be respectively the maths and the french arrays of the training set, and it also takes the coordinates of the given point, which are the maths and french average of the given point in our example.  
+The ascending sort of individuals is done according to their cost : the best is the first in the array. The selection process is an elitism process taking for argument the ratio of individuals we want to retain.
 
 ```python 
-def distance(params1, params2, from_val1, from_val2):
-    """
-    calculate the euclidean distances from a point to each point of an array
-    :param params1: param1 coordinates of the array
-    :param params2: param2 coordinates of the array
-    :param from_val1: param1 of the point
-    :param from_val2: param2 of the point
-    :return: array of euclidean distances and index of the point in the array
-    """
-    length = len(params1)
-    distances = [0] * length
-    for i in range(length):  # calculate the distance to each point
-        distances[i] = [((params1[i] - from_val1) ** 2 + (params2[i] - from_val2) ** 2) ** (1 / 2), i]
-    return distances
+    def sort(self):
+        """
+        sort the individuals according to their cost
+        """
+        self.individuals.sort(key=lambda individual: individual.cost)
+        # change the best individuals if the new best one beats the latest one
+        if self.best.cost >= self.individuals[0].cost:
+            self.best = self.individuals[0]
+
+    # region genetics
+    def selection(self, ratio_selection):
+        """
+        The selection here is to keep the ratio_selection% bests
+        :param ratio_selection: selection ratio of interest
+        """
+        self.individuals = [self.individuals[individual]
+                            for individual in range(int(ratio_selection*len(self.individuals)))]
 ```
 
-The function `findKNN()` as its name indicates, will find the k-nearest neighbors and returns their row index. It takes five arguments : k is the number of neighbors to find and the last four arguments are the same as the previous function `distance()`. 
+The crossover is made between the retained individuals. They are randomly chosen to create children. The `crossover()` function takes for argument a ratio of the population size to reach. A 0.3 ratio in a 100-individuals desired population will create 30 children for example.
 
 ```python 
-def findKNN(k, maths_array, french_array, maths_value, french_value):
-    """
-    find the k nearests neighbors of a point
-    :param k: k neighbors of interest
-    :param maths_array: maths average array
-    :param french_array: french average array
-    :param maths_value: maths average of the point
-    :param french_value: french average of the point
-    :return: array of k nearests neighbors's index in the array
-    """
-    # calculate the distance between the point and each point of the array
-    distances = distance(maths_array, french_array, maths_value, french_value)
-    # sort the distances
-    sorted_distances = sorted(distances, key=lambda dist: dist[0])
-    # keep the k firsts(except the first one which is the same point if distance = 0)
-    if sorted_distances[0][0] == 0:
-        nearests_neighbors = sorted_distances[1:k + 1]
-    else:
-        nearests_neighbors = sorted_distances[:k]
-    # extract their index in the array
-    k_nearests_index = [neighbor[1] for _, neighbor in enumerate(nearests_neighbors)]
-    return k_nearests_index
+    def crossover(self, ratio_crossover, ratio_selection):
+        """
+        Crossover the selected individuals
+        :param ratio_crossover: child ratio from crossover of interest
+        :param ratio_selection: selection ratio of interest
+        """
+        # count the number of parents after the selection
+        potential_parent_count = int(ratio_selection * self.size - 1)
+        for _ in range(int(ratio_crossover * self.size)):
+            # select a first parent
+            parent_1_index = random.randint(0,potential_parent_count)
+            # select a second parent (different than the first one)
+            parent_2_index = random.randint(0,potential_parent_count)
+            # verify they are different or change the second parent
+            while parent_1_index == parent_2_index:
+                parent_2_index = random.randint(0, potential_parent_count)
+            self.individuals.append(self.individuals[parent_1_index].crossWith(self.individuals[parent_2_index]))
+
 ```
 
-The goal of the KNN algorithm is to classify a sample. The `prediction()` function has this role. It classifies the sample as the majority class between the k samples having minimum distance to the sample. It takes the same 5 arguments as the previous function.
+The `mutation()` function needs also for argument a ratio based on the population size. 
 
 ```python 
-def prediction(k, maths_array, french_array, category_array, maths_value, french_value):
-    """
-    make a prediction for a point
-    :param k: k neighbors of interest
-    :param maths_array: maths average array
-    :param french_array: french average array
-    :param category_array: category array
-    :param maths_value: maths average of the point
-    :param french_value: french average of the point
-    :return:
-    """
-    k_nearests_index = findKNN(k, maths_array, french_array, maths_value, french_value)
-    # count what category is the most represents by counting
-    counts = {}
-    for _, k in enumerate(k_nearests_index):
-        c = category_array[k]
-        if c not in counts:
-            counts[c] = 1
-        else:
-            counts[c] += 1
-    return max(counts, key=counts.get)
+    def mutation(self, ratio_mutation):
+        """
+        Mutate randomly the population according to the ratio chosen
+        :param ratio_mutation: mutation ratio of interest
+        """
+        for _ in range(int(ratio_mutation * self.size)):
+            # select a random individual
+            individual_index = random.randint(0, self.size - 1)
+            self.individuals[individual_index].mutate()
 ```
 
-![predictions](/src/prediction.png)
+All the functions to get the (n+1) generation from the n generation are now defined. The `nextGeneration()` function assembles the processes.
 
-The `areaPrecditions()` function is a bit the purpose of the KNN algorithm. It will calculate for each possible averages the prediction the algorithm made. As we can see on the graph above, the areas are divided in 3 colors. It basically means that if a point is on the blue area then the prediction is that the sample will pass the maths exam at the end of the year.
+```python 
+    def nextGeneration(self, ratio_selection, ratio_crossover, ratio_mutation):
+        """
+        Next generation process
+        :param ratio_selection: selection ratio of interest
+        :param ratio_crossover: child ratio from crossover of interest
+        :param ratio_mutation: mutation ratio of interest
+        """
+        self.sort()  # sort the individuals according to their cost
+        self.selection(ratio_selection)  # selection process according to the ratio chosen
+        self.crossover(ratio_crossover, ratio_selection)  # crossover process according to the ratio chosen
+        self.newIndividuals()  # create new individuals if needed
+        self.mutation(ratio_mutation)  # mutation process according to the ratio chosen
+```
 
-However, it should be taken into consideration that the algorithm is time-consumming. Doing predictions on areas requires lots of calculations. And since an area is technically an infinity of points, you must reduce the number of points to calculate. 
-`step = 6` means that the square of an area equal to 1 would calculate the prediction for `step²` points, which would be 36 points to process. It easily can be changed.  
+### Genetic Generation and plot
+
+In a `geneticAlgorithm.py` file : 
+
+We need to import matplotlib.pyplot to show the population and matplotlib.animation to show it dynamically.
 
 ```python
-def areaPredictions():
-    """
-    make predictions on each point, which is visible on the graph
-    """
-    step = 6  # step by unit (to increase if you see blanks)
-
-    # find min and max of each axe to plot each point from min to max
-    x_min, x_max = int(min(maths)) * step, (int(max(maths)) + 1) * step
-    y_min, y_max = int(min(french)) * step, (int(max(french)) + 1) * step
-
-    # create range of float as the range() function is only for int
-    x_range = [x / step for x in range(x_min, x_max)]
-    y_range = [y / step for y in range(y_min, y_max)]
-
-    # for each plot's point found the k nearests neighbors
-    for x in x_range:
-        for y in y_range:
-            predicted = prediction(k, maths, french, category, x, y)
-            predictions.append([x, y, predicted])
-            ax.scatter(x, y, c=area_color[predicted])  # plot the prediction
-        print('prediction calculation : {0}%'
-              .format(int((x*step - x_min + 1) / len(x_range) * 100)))
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from population import *
 ```
 
-### Choose K
+There are a lot of variables to consider respectively organized in groups for pseudo-constants, the population and the plot. 
 
-The KNN algorithm is now written. Then two next functions will be used to choose a convenient value of k. 
+```python
+SIZE_PLOT = 10
+DISPLAY_GENERATION = 5  # Display the best individuals each DISPLAY_GENERATION
+N_POINT = 30  # Number of points to link
+SIZE_POPULATION = 150  # Size of each population
+MAX_GENERATION = 500  # Stop running at MAX_GENERATION
+# each new generation is composed of :
+# --> RATIO_SELECTION of the best individuals in the previous generation
+# --> RATIO_CROSSOVER of children of the best individuals selected
+# --> The rest is new random individuals to minimize the chance to be in a local minimum
+RATIO_SELECTION = 0.3
+RATIO_CROSSOVER = 0.65
+# each new generation is subject to a RATIO_MUTATION
+RATIO_MUTATION = 0.7
 
-The `getAccuracy()` function simply calculates the accuracy of the predictions made by our algorithm on the test set considering the training set and according to a given k value. It takes three arguments : a training set, a test set to compare the prediction to the reality and the given k value.   
+# Initialize the first randomized population
+population = randomPopulation(SIZE_POPULATION, SIZE_PLOT, N_POINT)
+generation_count = 0
+# costs array to keep the best cost value of each generation
+costs = []
 
-```python 
-def getAccuracy(trainingSet, testSet, k):
-    """
-    get the accuracy of the k-NN method for a specified k
-    :param trainingSet: training set
-    :param testSet: test set
-    :param k: k of interest
-    :return: the accuracy for the tested k
-    """
-    correct = 0
-    maths, french, category = toXY(trainingSet)
-    maths_test, french_test, category_test = toXY(testSet)
-    for i in range(len(testSet)):
-        if testSet[i][-1] == prediction(k, maths, french, category, maths_test[i], french_test[i]):
-            correct += 1
-    return (correct / float(len(testSet))) * 100.0
+# Initialize the two plots
+figGen = plt.figure(1)  # display the best cost according to the generation number
+fig = plt.figure(0)  # display the best cost for the actual generation
+
+ax = fig.add_subplot(1,1,1)  # plot for the cost visualization
+axGen = figGen.add_subplot(1,1,1)  # plot for the costs evolution
+
+ani = None  # to animate (update) the two plots
+started = False
 ```
 
-The `choose_k()` function runs the previous function for a range of k value and returns the best one. It takes three arguments : the minimum k value to test, the maximum k value to test and the number of test, which have to be done for each value.
+`diplay()` function displays the data in two plots. A first plot is representing the best individual found. A second plot is showing the evolution of the best cost found by generation. The `key_pressed()` is made to launch/pause the evolution when pressing on the enter key.
 
 ```python 
-def choose_k(k_min, k_max, n_test):
-    """
-    choose a k in a determined range by testing each one
-    :param k_min: minimum k to test
-    :param k_max: maximum k to test
-    :param n_test: number of test for each k
-    :return: average accuracy array of the k tests
-    """
-    for k in range(k_min, k_max + 1):
-        for test in range(n_test):
-            trainingSet, testSet = split(dataset, 5 / 6)
-            accuracies[k - k_min] += getAccuracy(trainingSet, testSet, k) / n_test
-        print("choose k : {0}%"
-              .format(int((k - k_min + 1) / (k_max + 1 - k_min) * 100)))
-
-    return accuracies.index(max(accuracies)) + k_min
-```
-
-
-### Display
-
-All the function are now operative. We only have to display it. The `display()` function is a main like function for the rendering. According to the `RUN_K_ACCURACY` and `RUN_AREA_PREDICTION` it will render the outputs (or not). 
-
-```python 
-def displayAccuracies():
-    """
-    dislay a plot of average accuracy for each k tested
-    """
-    # set the title and legends
-    ax_k.set_title('Accuracy according to k')
-    ax_k.set_xlabel('k')
-    ax_k.set_ylabel('Accuracy (%)')
-    # plot the accuracies
-    ax_k.plot(range(K_MIN, K_MAX + 1), accuracies)
-    fig_k.canvas.draw()
-
-
-def displayAreas():
-    """
-    display on the existing graph of points the areas of predictions
-    """
-    print('display predictions...')
-    for _, p in enumerate(predictions):
-        ax.scatter(p[0], p[1], c=area_color[p[2]])
-
-
 def display():
     """
-    plot the points of the training set
+    Update the two plots
     """
-    # set the title and the legends
-    ax.set_title('Passing final exams according to subject\'s average')
-    ax.set_xlabel('Maths')
-    ax.set_ylabel('French')
+    # First, clear the plots
+    ax.clear()
+    axGen.clear()
 
+    # actualize plot title and axes labels
+    ax.set_title("Generation : {0}".format(generation_count))
+    axGen.set_xlabel("Generation")
+    axGen.set_ylabel("best cost")
+    # ask for the best cost in two vectors (X coord and Y coord)
+    X, Y = population.best.toXY()
 
-    if RUN_K_ACCURACY:  # if the different k were tested
-        displayAccuracies()
-    if RUN_AREA_PREDICTION:  # if the areas of predictions were calculated
-        displayAreas()
+    # place the N_POINT points (except starting-ending point coord(0, 0))
+    plt.scatter(X[1:-1], Y[1:-1], c='#474747')
+    # then place the starting-ending point
+    plt.scatter(0, 0, c='#8800FF')
 
-    # plot the points of the training set
-    for i, cls in enumerate(category):
-        ax.scatter(maths[i], french[i], c=color[cls])
-
-    plt_legends = [mpatches.Patch(color=color[key], label=legends[key]) for key, _ in enumerate(legends)]
-    plt.legend(handles=plt_legends)
-    # then plot everything
+    if started:
+        # show how the N_POINT are linked in the best cost case found
+        ax.plot(X, Y, c='#2F9599', )
+        # actualize the plot of costs
+        axGen.plot([i for i in range(len(costs))], costs, c='#2F9599')
+    axGen.set_xlim([0, MAX_GENERATION])  # to keep the same abscissa
+    # to show the plots
     fig.canvas.draw()
+    figGen.canvas.draw()
+
+def key_pressed(event):
+    """
+    To start/pause running the programme
+    :param event: key_press_event
+    """
+    if event.key == 'enter':
+        global started
+        started = not started
+```
+
+The `nextGeneration()` function waits for the enter key pressed event and activates the displaying function.
+
+```python
+def nextGeneration(frame_number):
+    """
+    Update for new generation of the population
+    :param frame_number:
+    """
+    if started:
+        global generation_count
+        while generation_count < MAX_GENERATION:
+            population.nextGeneration(RATIO_SELECTION, RATIO_CROSSOVER, RATIO_MUTATION)
+            generation_count += 1
+            costs.append(population.best.cost)  # actualize the best costs array
+            # then display the new update
+            if generation_count % DISPLAY_GENERATION == 0:
+                display()
+        figGen.canvas.draw()
+```
+
+Each function is completed. We can now run the script. 
+
+```python
+if __name__ == "__main__":
+    # to animate the plot and launch the population update
+    ani = animation.FuncAnimation(fig, nextGeneration)
+    # connect to the key press event to start/pause the program
+    fig.canvas.mpl_connect('key_press_event', key_pressed)
+    display()
     plt.show()
 ```
 
 
-### Run it !
 
-```python 
-if __name__ == '__main__':
-    dataset = loadDataset("FrenchStudent.csv")
 
-    if RUN_K_ACCURACY:
-        k = choose_k(K_MIN, K_MAX, N_TEST)
 
-    trainingSet, testSet = split(dataset, 1)
-    maths, french, category = toXY(trainingSet)
-    if RUN_AREA_PREDICTION:
-        areaPredictions()
-    display()
-```
 
 
